@@ -1,15 +1,15 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
  * WolfCrystals v1.0.0
- * Библиотека, предназначенная для обеспечения поддержки русского языка 
- * теми из HD44780-совместимых дисплеев, в память знакогенератора которых 
- * изначально была зашита катакана, а не кириллица.
+ * Библиотека, переделана  для обеспечения поддержки русского языка 
+ * на WH1602B-TMI-CT# - дисплее. (Азбука электронщика от masterkit)
  *
  * Это осуществляется путём замены русских букв подобными им
- * символами из английского алфавита и катаканы. Для семи русских букв
+ * символами из английского алфавита. Для семи русских букв
  * были нарисованы имитирующие их глифы. 
  * 
- * Библиотека совместима с Arduino IDE 1.0+
+ * Библиотека тестировалась с Arduino IDE 1.8.0
  * (C) 2014 Ivan Klenov, Wolf4D@list.ru
+ * 2017 правил Илья, grayrat@ya.ru
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,14 +28,8 @@
  */
 
 #include "WolfCrystal.h"
-
-#include <stdio.h>
-#include <string.h>
-#include <inttypes.h>
 #include <LiquidCrystal.h>
-#include <avr/pgmspace.h>
-
-#include <string>
+#include <Wstring.h>
 
 
 #if defined(ARDUINO) && ARDUINO >= 100
@@ -51,7 +45,7 @@
 // Потому по умолчанию все строчные русские буквы переводятся в прописные.
 // Если требуется включить вывод русских строчных (а они местами ой как корявы),
 // то раскомментируйте следующую строку:
-//#define CASE_SENSITIVE
+#define CASE_SENSITIVE
 ///////////////////////////////////////////////////////////////////////////////
 
 // Глифы русских букв (использовано из них 7 штук, 1 глиф свободен):
@@ -216,140 +210,115 @@ String WolfCrystal::ProcessChars(String input)
 Также иногда по странной причине съедаются части строки - потому
 было использовано два ни на что толком не влияющих костыля.
 */
-
-// Костыль 1:
-input=input+' ';
-
-// Костыль 2
-if ((input.charAt(0)<=127) && (input.charAt(0)>=32)) input = ' ' + input;
-
-// Буфер однобайтовых символов
-char Buf[(input.length()+2)*2+1];
-input.toCharArray(Buf, input.length());
-
-// Тут будем хранить выходную строку
-String answer="";
-
-// Не самый "прямой" способ, но по соотношению трудоёмкость/эффект
-// точно не худший (худший я уже опробовал >_<).
-// Заменяем кириллицу на латиницу, катакану (по кодовой таблице) или глифы.
-for(int i=1; i<input.length(); i=i+1)
-switch(Buf[i])
-{
-case 'А': answer=answer+'A'; break;
-case 'Б': answer=answer+char(uint8_t(1)); break;
-case 'В': answer=answer+'B'; break;
-case 'Г': answer=answer+char(uint8_t(2)); break;
-case 'Д': answer=answer+char(uint8_t(3)); break;
-case 'Е': answer=answer+'E'; break;
-//case 'Ё': answer=answer+'E'+char(222); break;
-case 'Ж': answer=answer+'E'+char(200); break;
-case 'З': answer=answer+'3'; break;
-case 'И': answer=answer+char(uint8_t(5)); break;
-case 'Й': answer=answer+char(uint8_t(5))+char(96); break;
-case 'К': answer=answer+'K'; break;
-case 'Л': answer=answer+char(uint8_t(6)); break;
-case 'М': answer=answer+'M'; break;
-case 'Н': answer=answer+'H'; break;
-case 'О': answer=answer+'O'; break;
-case 'П': answer=answer+char(uint8_t(4)); break;
-case 'Р': answer=answer+'P'; break;
-case 'С': answer=answer+'C'; break;
-case 'Т': answer=answer+'T'; break;
-case 'У': answer=answer+'Y'; break;
-case 'Ф': answer=answer+'E'+char(236); break;
-case 'Х': answer=answer+'X'; break;
-case 'Ц': answer=answer+char(uint8_t(7)); break;
-case 'Ч': answer=answer+char(209); break;
-case 'Ш': answer=answer+'W'; break;
-case 'Щ': answer=answer+char(208); break;
-case 'Ъ': answer=answer+char(162)+'b'; break;
-case 'Ы': answer=answer+'b|'; break;
-case 'Ь': answer=answer+'b'; break;
-case 'Э': answer=answer+char(214); break;
-case 'Ю': answer=answer+char(196)+'O'; break;
-case 'Я': answer=answer+'9|'; break;
+String aaa;
+input.replace("А","A");
+aaa=char(160);input.replace("Б",aaa);
+input.replace("В","B");
+aaa=char(161);input.replace("Г",aaa);
+aaa=char(224);input.replace("Д",aaa);
+input.replace("Е","E");
+aaa=char(162);input.replace("Ё",aaa);
+aaa=char(163);input.replace("Ж",aaa);
+aaa=char(164);input.replace("З",aaa);
+aaa=char(165);input.replace("И",aaa);
+aaa=char(166);input.replace("Й",aaa);
+input.replace("К","K");
+aaa=char(167);input.replace("Л",aaa);
+input.replace("М","M");
+input.replace("Н","H");
+input.replace("О","O");
+aaa=char(168);input.replace("П",aaa);
+input.replace("Р","P");
+input.replace("С","C");
+input.replace("Т","T");
+aaa=char(169);input.replace("У",aaa);
+aaa=char(170);input.replace("Ф",aaa);
+input.replace("Х","X");
+aaa=char(225);input.replace("Ц",aaa);
+aaa=char(171);input.replace("Ч",aaa);
+aaa=char(172);input.replace("Ш",aaa);
+aaa=char(226);input.replace("Щ",aaa);
+aaa=char(173);input.replace("Ъ",aaa);
+aaa=char(174);input.replace("Ы",aaa);
+aaa=char(226);input.replace("Ь",aaa);
+aaa=char(175);input.replace("Э",aaa);
+aaa=char(176);input.replace("Ю",aaa);
+aaa=char(177);input.replace("Я",aaa);
 // Так как никакие toUpper не работают для кириллицы, то просто прописано
 // две ветви выполнения для разных настроек библиотеки. Это позволяет уменьшить
 // потребление SRAM.
 #ifdef CASE_SENSITIVE
-case 'а': answer=answer+'a'; break;
-case 'б': answer=answer+'6'; break;
-case 'в': answer=answer+char(226); break;
-case 'г': answer=answer+'r'; break;
-case 'д': answer=answer+char(229); break;
-case 'е': answer=answer+'e'; break;
-// case 'ё': answer=answer+'e'+char(222); break;
-// странный баг компилятора! буквы ё и Ё не принимаются!
-case 'ж': answer=answer+'*'; break;
-case 'з': answer=answer+char(174); break;
-case 'и': answer=answer+'u'; break;
-case 'й': answer=answer+'u'+char(96); break;
-case 'к': answer=answer+'k'; break;
-case 'л': answer=answer+char(202); break;
-case 'м': answer=answer+'m'; break;
-case 'н': answer=answer+char(252); break;
-case 'о': answer=answer+'o'; break;
-case 'п': answer=answer+'n'; break;
-case 'р': answer=answer+'p'; break;
-case 'с': answer=answer+'c'; break;
-case 'т': answer=answer+'t'; break;
-case 'у': answer=answer+'y'; break;
-case 'ф': answer=answer+'q'+'p'; break;
-case 'х': answer=answer+'x'; break;
-case 'ц': answer=answer+'u'+char(164); break;
-case 'ч': answer=answer+char(249); break;
-case 'ш': answer=answer+'w'; break;
-case 'щ': answer=answer+char(175); break;
-case 'ъ': answer=answer+char(162)+'b'; break;
-case 'ы': answer=answer+'b'+'|'; break;
-case 'ь': answer=answer+'b'; break;
-case 'э': answer=answer+char(166); break;
-case 'ю': answer=answer+char(170)+'o'; break;
-case 'я': answer=answer+'g'; break;
+input.replace("а","a");
+aaa=char(178);input.replace("б",aaa);
+aaa=char(179);input.replace("в",aaa);
+aaa=char(180);input.replace("г",aaa);
+aaa=char(227);input.replace("д",aaa);
+input.replace("е","e");
+aaa=char(181);input.replace("ё",aaa);
+aaa=char(182);input.replace("ж",aaa);
+aaa=char(183);input.replace("з",aaa);
+aaa=char(184);input.replace("и",aaa);
+aaa=char(185);input.replace("й",aaa);
+aaa=char(186);input.replace("к",aaa);
+aaa=char(187);input.replace("л",aaa);
+aaa=char(188);input.replace("м",aaa);
+aaa=char(189);input.replace("н",aaa);
+input.replace("о","o");
+aaa=char(190);input.replace("п",aaa);
+input.replace("р","p");
+input.replace("с","c");
+aaa=char(191);input.replace("т",aaa);
+input.replace("у","y");
+aaa=char(228);input.replace("ф",aaa);
+input.replace("х","x");
+aaa=char(229);input.replace("ц",aaa);
+aaa=char(192);input.replace("ч",aaa);
+aaa=char(193);input.replace("ш",aaa);
+aaa=char(226);input.replace("щ",aaa);
+aaa=char(196);input.replace("ь",aaa);
+aaa=char(195);input.replace("ы",aaa);
+aaa=char(194);input.replace("ъ",aaa);
+aaa=char(197);input.replace("э",aaa);
+aaa=char(198);input.replace("ю",aaa);
+aaa=char(199);input.replace("я",aaa);
 #else
-case 'а': answer=answer+'A'; break;
-case 'б': answer=answer+char(uint8_t(1)); break;
-case 'в': answer=answer+'B'; break;
-case 'г': answer=answer+char(uint8_t(2)); break;
-case 'д': answer=answer+char(uint8_t(3)); break;
-case 'е': answer=answer+'E'; break;
-//case 'Ё': answer=answer+'E'+char(222); break;
-case 'ж': answer=answer+'E'+char(200); break;
-case 'з': answer=answer+'3'; break;
-case 'и': answer=answer+char(uint8_t(5)); break;
-case 'й': answer=answer+char(uint8_t(5))+char(96); break;
-case 'к': answer=answer+'K'; break;
-case 'л': answer=answer+char(uint8_t(6)); break;
-case 'м': answer=answer+'M'; break;
-case 'н': answer=answer+'H'; break;
-case 'о': answer=answer+'O'; break;
-case 'п': answer=answer+char(uint8_t(4)); break;
-case 'р': answer=answer+'P'; break;
-case 'с': answer=answer+'C'; break;
-case 'т': answer=answer+'T'; break;
-case 'у': answer=answer+'Y'; break;
-case 'ф': answer=answer+'E'+char(236); break;
-case 'х': answer=answer+'X'; break;
-case 'ц': answer=answer+char(uint8_t(7)); break;
-case 'ч': answer=answer+char(209); break;
-case 'ш': answer=answer+'W'; break;
-case 'щ': answer=answer+char(208); break;
-case 'ъ': answer=answer+char(162)+'b'; break;
-case 'ы': answer=answer+'b|'; break;
-case 'ь': answer=answer+'b'; break;
-case 'э': answer=answer+char(214); break;
-case 'ю': answer=answer+char(196)+'O'; break;
-case 'я': answer=answer+'9|'; break;
+input.replace("а","A");
+aaa=char(160);input.replace("б",aaa);
+input.replace("в","B");
+aaa=char(161);input.replace("г",aaa);
+aaa=char(224);input.replace("д",aaa);
+input.replace("е","E");
+aaa=char(162);input.replace("ё",aaa);
+aaa=char(163);input.replace("ж",aaa);
+aaa=char(164);input.replace("з",aaa);
+aaa=char(165);input.replace("и",aaa);
+aaa=char(166);input.replace("й",aaa);
+input.replace("к","K");
+aaa=char(167);input.replace("л",aaa);
+input.replace("м","M");
+input.replace("н","H");
+input.replace("о","O");
+aaa=char(168);input.replace("п",aaa);
+input.replace("р","P");
+input.replace("с","C");
+input.replace("т","T");
+aaa=char(169);input.replace("у",aaa);
+aaa=char(170);input.replace("ф",aaa);
+input.replace("х","X");
+aaa=char(225);input.replace("ц",aaa);
+aaa=char(171);input.replace("ч",aaa);
+aaa=char(172);input.replace("ш",aaa);
+aaa=char(226);input.replace("щ",aaa);
+aaa=char(173);input.replace("ъ",aaa);
+aaa=char(174);input.replace("ы",aaa);
+aaa=char(226);input.replace("ь",aaa);
+aaa=char(175);input.replace("э",aaa);
+aaa=char(176);input.replace("ю",aaa);
+aaa=char(177);input.replace("я",aaa);
 #endif
 // Фильтр ввода. Если символ не конвертирован, но не за пределами "значимых" по
 // кодовой таблице, то пишем его тоже.
-default: {if (((Buf[i]<=127) && (Buf[i]>=32)) || (Buf[i]>252)) answer=answer+Buf[i]; }break;
-}
-// Кусочек костыля.
-answer=answer+' ';
-
-return answer;
+return input;
 };
 
 //#endif
